@@ -1,0 +1,127 @@
+body {
+  margin: 0px;
+}
+
+/* SVG */
+
+.graph {
+  background-color: #222;
+  width: 49vw;
+  vertical-align:top;
+}
+.pointer {
+  fill: #42b983;
+  cursor: pointer;
+}
+.pointer.selected {
+  fill: yellow;
+  cursor: pointer;
+}
+.edge {
+  stroke:rgb(255,0,0);
+}
+.acentroid{
+  stroke:rgb(255,0,0);
+}
+.dualPointer {
+  fill: #83b942;
+}
+.dualEdge {
+  stroke:rgb(0,0,255);
+}
+.dualTriangles {
+  fill: rgba(0,0,255,.21);
+}
+.dcentroid{
+  stroke:rgb(0,0,255);
+}
+.edge:hover, .dualEdge:hover {
+  cursor: copy;
+}
+.intpoint {
+  fill : gray;
+}
+.origin {
+  fill:white;
+  stroke:green;
+}
+
+/* Settings */
+
+.settings {
+  display: inline-block;
+  width: 49vw;
+  vertical-align:top;
+  margin-top: 1em;
+}
+.settings .field {
+  display: block;
+}
+.settings .string {
+  width:100%;
+}
+.round {
+  display: inline-block;
+  padding: .35em;
+  margin: .35em;
+  border-radius: .35em;
+}
+.colorA {
+  background-color: #FAA;
+}
+.colorD {
+  background-color: #AAF;
+}
+.colorAD {
+  background-color: #FAF;
+}
+.stoppingpong {
+  background-color: lightgreen;
+}
+.hessian {
+  display: inline-block;
+  padding: .35em;
+  margin: .35em;
+}
+.hessian table {
+  display: inline-block;
+  border-collapse: collapse;
+  margin-bottom: -1em;
+}
+.hessian table td {
+  border: 1px solid gray;
+}
+/* Controls */
+.controls {
+  display: inline-block;
+  vertical-align: top;
+  box-shadow: 1px 1px 3px gray;
+  padding: 7px;
+  font-size: .91em;
+}
+.controls h2 {
+  margin-top: 0px;
+  text-align: center;
+}
+.github-logo {
+  text-align: right;
+  padding: 1em;
+}
+.github-logo svg {
+  width: 2em;
+}
+.github-logo a:hover svg path {
+  fill: #933EC5;
+}
+[v-cloak] {
+  opacity: .21;
+}
+
+kbd {
+  background-color: #EEE;
+  border: 1px solid #DDD;
+  padding: 1px 3px;
+  display: inline-block;
+  margin: 1px;
+  border-radius: 3px;
+}

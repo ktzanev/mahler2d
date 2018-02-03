@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Macchina Convessa</title>
+
+  <link rel="stylesheet" href="main.css">
+
+</head>
+<body>
+  <div id="app">
+    <svg class="graph" v-bind="graphPos" transform="scale(1,-1)">
+      <g v-for="n in netSize">
+          <circle v-for="m in netSize" v-bind:cx="m-netOrigin" v-bind:cy="n-netOrigin" v-bind:r="integerPointSize" class="intpoint">
+            <animate v-if="isInside(m-netOrigin,n-netOrigin)" attributeType="XML" repeatCount="indefinite" attributeName="fill" values="#f00;#f00;#fff" dur="0.7s" />
+          </circle>
+      </g>
+      <!-- edges -->
+      <line v-for="(i,l) in dLines" v-bind="l" @mousedown.prevent="addPoint($event,i,false)" class="dualEdge" v-bind:stroke-width="edgeWidth"/>
+      <line v-for="(i,l) in aLines" v-bind="l" @mousedown.prevent="addPoint($event,i,true)" class="edge" v-bind:stroke-width="edgeWidth"/>
+      <!-- vertices -->
+      <circle v-for="(i,p) in aVertices" v-bind="p" @mousedown.prevent="startMove($event,i,true)" @touchstart.prevent="startMove($event,i,true)" v-bind:r="vertexSize" class="pointer" v-bind:class="{ selected: p.selected}" />
+      <circle v-for="(i,p) in dVertices" v-bind="p" @mousedown.prevent="startMove($event,i,false)" @touchstart.prevent="startMove($event,i,false)" v-bind:r="vertexSize" class="pointer" v-bind:class="{ selected: p.selected}" />
+      <!-- centroids -->
+      <circle v-bind="centroidD" v-bind:r="vertexSize" v-bind:stroke-width="vertexSize/3" class="dcentroid"></circle>
+      <circle v-bind="centroidA" v-bind:r="vertexSize" v-bind:stroke-width="vertexSize/3" class="acentroid"></circle>
+      <circle cx="0" cy="0" v-bind:r="vertexSize/2" v-bind:stroke-width="vertexSize/3" class="origin"></circle>
+    </svg>
+    <!-- ============================================ -->
+    <div class="settings" v-cloak>
+      Example:
+      <select v-model="selectedExample" @change="setExample">
+        <option v-for="e in examples" v-bind:value="e">
+          {{ e.title }}
+        </option>
+      </select><br>
+      <hr>
+      <!-- ================== A ===================== -->
+      <input type="text" v-model="aString" class="string field">
+      <span class="round colorA">Volume A: {{volumeA.toFixed(3)}}</span>
+      <button @click="centroidAtZero(true)" class="round colorA">g(A)→0</button>
+      <button @click="santaloAtZero(true)" class="round colorA">s(A)~>0</button>
+      Transform :
+      <button @click="linearTransform(true,[1,0,-1,1])" class="round colorA">←</button>
+      <button @click="linearTransform(true,[1,0,1,1])" class="round colorA">→</button>
+      <button @click="linearTransform(true,[1,1,0,1])" class="round colorA">↑</button>
+      <button @click="linearTransform(true,[1,-1,0,1])" class="round colorA">↓</button>
+      <hr>
+      <!-- ============= MIDDLE ===================== -->
+      <button @click="startCentroidPingPong()" v-show="cID === null">start Centroid Ping-Pong</button>
+      <button @click="stopCentroidPingPong()" v-show="cID !== null" class="stoppingpong">stop Centroid Ping-Pong</button>
+      <button @click="startSantaloPingPong()" v-show="sID === null">start Santaló Ping-Pong</button>
+      <button @click="stopSantaloPingPong()" v-show="sID !== null" class="stoppingpong">stop Santaló Ping-Pong</button>
+
+      <div class="round colorAD">VA*VD={{volumeAD.toFixed(4)}}</div>
+      <div class="hessian">
+        -12 x (<span class="colorD">{{volumeD.toFixed(4)}}</span>)
+        <table class="colorA">
+          <tr>
+            <td>{{z2A[0].toFixed(4)}}</td>
+            <td>{{z2A[2].toFixed(4)}}</td>
+          </tr>
+          <tr>
+            <td>{{z2A[1].toFixed(4)}}</td>
+            <td>{{z2A[3].toFixed(4)}}</td>
+          </tr>
+        </table>
+        (Id - 16/<span class="colorAD">{{volumeAD.toFixed(4)}}</span>
+        <table class="colorD">
+          <tr>
+            <td>{{z2D[0].toFixed(4)}}</td>
+            <td>{{z2D[2].toFixed(4)}}</td>
+          </tr>
+          <tr>
+            <td>{{z2D[1].toFixed(4)}}</td>
+            <td>{{z2D[3].toFixed(4)}}</td>
+          </tr>
+        </table>
+        <table class="colorA">
+          <tr>
+            <td>{{z2A[0].toFixed(4)}}</td>
+            <td>{{z2A[2].toFixed(4)}}</td>
+          </tr>
+          <tr>
+            <td>{{z2A[1].toFixed(4)}}</td>
+            <td>{{z2A[3].toFixed(4)}}</td>
+          </tr>
+        </table>
+        )
+      </div>
+      <div class="hessian">(<span class="colorD">{{(-12*volumeD).toFixed(4)}}</span>)
+        <table class="colorA">
+          <tr>
+            <td>{{z2A[0].toFixed(4)}}</td>
+            <td>{{z2A[2].toFixed(4)}}</td>
+          </tr>
+          <tr>
+            <td>{{z2A[1].toFixed(4)}}</td>
+            <td>{{z2A[3].toFixed(4)}}</td>
+          </tr>
+        </table>
+        <table class="colorAD">
+          <tr>
+            <td>{{factorDA[0].toFixed(4)}}</td>
+            <td>{{factorDA[2].toFixed(4)}}</td>
+          </tr>
+          <tr>
+            <td>{{factorDA[1].toFixed(4)}}</td>
+            <td>{{factorDA[3].toFixed(4)}}</td>
+          </tr>
+        </table>
+      </div>
+      <div class="hessian">det(
+        <table class="colorAD">
+          <tr>
+            <td>{{hessianDA[0].toFixed(4)}}</td>
+            <td>{{hessianDA[2].toFixed(4)}}</td>
+          </tr>
+          <tr>
+            <td>{{hessianDA[1].toFixed(4)}}</td>
+            <td>{{hessianDA[3].toFixed(4)}}</td>
+          </tr>
+        </table>
+        ) = {{(hessianDA[0]*hessianDA[3] - hessianDA[1]*hessianDA[2]).toFixed(4)}}
+      </div>
+      <hr>
+      <div class="hessian">
+        -12 x (<span class="colorD">{{volumeD.toFixed(4)}}</span>)
+        <table class="colorA">
+          <tr>
+            <td>{{z2A[0].toFixed(4)}}</td>
+            <td>{{z2A[2].toFixed(4)}}</td>
+          </tr>
+          <tr>
+            <td>{{z2A[1].toFixed(4)}}</td>
+            <td>{{z2A[3].toFixed(4)}}</td>
+          </tr>
+        </table>
+        (Id - 16/<span class="colorAD">{{volumeAD.toFixed(4)}}</span>
+        <table class="colorA">
+          <tr>
+            <td>{{z2A[0].toFixed(4)}}</td>
+            <td>{{z2A[2].toFixed(4)}}</td>
+          </tr>
+          <tr>
+            <td>{{z2A[1].toFixed(4)}}</td>
+            <td>{{z2A[3].toFixed(4)}}</td>
+          </tr>
+        </table>
+        <table class="colorD">
+          <tr>
+            <td>{{z2D[0].toFixed(4)}}</td>
+            <td>{{z2D[2].toFixed(4)}}</td>
+          </tr>
+          <tr>
+            <td>{{z2D[1].toFixed(4)}}</td>
+            <td>{{z2D[3].toFixed(4)}}</td>
+          </tr>
+        </table>
+        )
+      </div>
+      <div class="hessian">(<span class="colorD">{{(-12*volumeD).toFixed(4)}}</span>)
+        <table class="colorA">
+          <tr>
+            <td>{{z2A[0].toFixed(4)}}</td>
+            <td>{{z2A[2].toFixed(4)}}</td>
+          </tr>
+          <tr>
+            <td>{{z2A[1].toFixed(4)}}</td>
+            <td>{{z2A[3].toFixed(4)}}</td>
+          </tr>
+        </table>
+        <table class="colorAD">
+          <tr>
+            <td>{{factorAD[0].toFixed(4)}}</td>
+            <td>{{factorAD[2].toFixed(4)}}</td>
+          </tr>
+          <tr>
+            <td>{{factorAD[1].toFixed(4)}}</td>
+            <td>{{factorAD[3].toFixed(4)}}</td>
+          </tr>
+        </table>
+      </div>
+      <div class="hessian">det(
+        <table class="colorAD">
+          <tr>
+            <td>{{hessianAD[0].toFixed(4)}}</td>
+            <td>{{hessianAD[2].toFixed(4)}}</td>
+          </tr>
+          <tr>
+            <td>{{hessianAD[1].toFixed(4)}}</td>
+            <td>{{hessianAD[3].toFixed(4)}}</td>
+          </tr>
+        </table>
+        ) = {{(hessianAD[0]*hessianAD[3] - hessianAD[1]*hessianAD[2]).toFixed(4)}}
+      </div>
+      <hr>
+      <!-- ================== A ===================== -->
+      <input type="text" v-model="dString" class="string field">
+      <span class="round colorA">Volume D: {{volumeD.toFixed(3)}}</span>
+      <button @click="centroidAtZero(false)" class="round colorD">g(D)→0</button>
+      <button @click="santaloAtZero(false)" class="round colorD">s(D)~>0</button>
+      Transform :
+      <button @click="linearTransform(false,[1,0,-1,1])" class="round colorD">←</button>
+      <button @click="linearTransform(false,[1,0,1,1])" class="round colorD">→</button>
+      <button @click="linearTransform(false,[1,1,0,1])" class="round colorD">↑</button>
+      <button @click="linearTransform(false,[1,-1,0,1])" class="round colorD">↓</button>
+      <hr>
+      <!-- ============= CONTROLS ===================== -->
+      <div class="controls">
+        <h2>Settings</h2>
+        Zoom: <input type="range" v-model="graphSize" min="5" max="21" step="2"><br>
+        Vertex size: <input type="range" min="0" max="0.5" step="0.01" v-model="vertexSize"><br>
+        Edge width: <input type="range" min="0" max="0.5" step="0.01" v-model="edgeWidth"><br>
+      </div>
+      <div class="controls">
+        <h2>Help</h2>
+        <ul>
+          <li><kbd>Shift+Click</kbd> on edge => add point;</li>
+          <li><kbd>{{ useCtrl ? "Ctrl": "Cmd"}}+Click</kbd> on vertex => select/deselect it;</li>
+          <li><kbd>Alt+Click</kbd> on vertex => select/deselect all.</li>
+        </ul>
+        <div class="github-logo">
+          <a href="https://github.com/ktzanev/macchina-convessa">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 92 92">
+              <path fill="gray" d="M62 52.5c-3.7 0-6.6 4-6.6 9s3 9 6.5 9 6.4-4 6.4-9-3-9-6.5-9zM84.4 29c.8-1.7.8-12-3-22 0 0-9.2 1-23 10.4-2.8-.8-7.6-1.2-12.5-1.2s-9.7.4-12.6 1.2C19.7 8 10.6 7 10.6 7c-4 10-4 20.3-3 22C2.7 34.3 0 40.3 0 48.6 0 84.5 29.8 85 37.3 85h17.4c7.5 0 37.3-.6 37.3-36.5 0-8.3-2.8-14.3-7.5-19.4zM46 80.7c-19 0-33.7-2.3-33.7-20.6 0-4.4 1.6-8.5 5.2-12 6.2-5.5 16.6-2.5 28.4-2.5 12 0 22.3-3 28.5 2.6 3.6 3.5 5.2 7.6 5.2 12C79.7 78.3 65 80.6 46 80.6zm-16-28c-3.5 0-6.4 4-6.4 9s3 9 6.5 9c3.7 0 6.6-4 6.6-9s-3-9-6.5-9z"/>
+            </svg>
+          </a>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- JS -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/1.0.28/vue.min.js" /></script>
+  <script src="polygone.js"></script>
+  <script src="main.js"></script>
+</body>
+</html>
