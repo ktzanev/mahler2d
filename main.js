@@ -51,14 +51,17 @@ var vm = new Vue({
   // COMPUTED
   // ===============================================================
   computed: {
+    // *****************************************
     // the polygon A like [{cx,cy,selected}]
     aVertices: function() {
       return vertices(this.aPolygon, this.aSelected);
     },
+    // *****************************************
     // and it's dual D like [x1,y1,x2,y2,...]
     dVertices: function() {
       return vertices(this.dPolygon, this.dSelected);
     },
+    // *****************************************
     // the string replresentation of A like "(x1,y1)(x2,y2)..."
     aString: {
       // getter
@@ -77,6 +80,7 @@ var vm = new Vue({
         polystr2localStorage(str,true);
       }
     },
+    // *****************************************
     // the string replresentation of D like "(x1,y1)(x2,y2)..."
     dString: {
       // getter
@@ -95,38 +99,48 @@ var vm = new Vue({
         polystr2localStorage(str,false);
       }
     },
+    // *****************************************
     volumeA : function () {
       return volume(this.aPolygon);
     },
+    // *****************************************
     volumeD : function () {
       return volume(this.dPolygon);
     },
+    // *****************************************
     volumeAD : function () {
       return this.volumeA*this.volumeD;
     },
+    // *****************************************
     centroidA : function () {
       var c = centroid(this.aPolygon);
       return { cx:c[0], cy:c[1] };
     },
+    // *****************************************
     centroidD : function () {
       var c = centroid(this.dPolygon);
       return { cx:c[0], cy:c[1] };
     },
+    // *****************************************
     aLines: function () {
       return edgesOfPolygon(this.aPolygon);
     }, // end aLines()
+    // *****************************************
     dLines: function () {
       return edgesOfPolygon(this.dPolygon);
     }, // end dLines
+    // *****************************************
     // second Minkovski for A
     z2A: function(){
       return zxz(this.aPolygon);
     },
+    // *****************************************
     // second Minkovski for D
     z2D: function(){
       return zxz(this.dPolygon);
     },
-    // second matrix factor of the Hessian
+    // *****************************************
+    // second matrix factor of the Hessian (if DA)
     factorDA: function(){
       var z2DA = matrixByMatrix(this.z2D,this.z2A);
       return [
@@ -136,6 +150,8 @@ var vm = new Vue({
         1 - 16*z2DA[3]/this.volumeAD
       ];
     },
+    // *****************************************
+    // second matrix factor of the Hessian (if AD)
     factorAD: function(){
       var z2AD = matrixByMatrix(this.z2A,this.z2D);
       return [
@@ -145,14 +161,19 @@ var vm = new Vue({
         1 - 16*z2AD[3]/this.volumeAD
       ];
     },
-    // the Hessian (that hass sens only at critical points)
+    // *****************************************
+    // the Hessian (that has sens only at critical points) using factor DA
     hessianDA: function(){
       return matrixByScalar(-12*this.volumeD,matrixByMatrix(this.z2A,this.factorDA));
     },
+    // *****************************************
+    // the Hessian (that has sens only at critical points) using factor AD
     hessianAD: function(){
       return matrixByScalar(-12*this.volumeD,matrixByMatrix(this.z2A,this.factorAD));
     },
+    // ===============================================================
     // SVG parameters
+    // *****************************************
     graphPos: function graphPos() {
       var size = this.graphSize;
       var half = size / 2;
@@ -161,13 +182,18 @@ var vm = new Vue({
         width: size
       };
     },
+    // *****************************************
     netSize: function() {
       return 2*Math.floor(this.visi/2) + 3;
     },
+    // *****************************************
     netOrigin: function() {
       return Math.floor(this.graphSize/2) + 1;
     }
   }, // end computed
+  // ================================================================
+  // CREATED
+  // ================================================================
   // when the app is starting ...
   created: function () {
     try {
@@ -181,10 +207,11 @@ var vm = new Vue({
       this.aString = "(0,1)(1,0)(-1,-1)(-2,-1)";
     }
   }, // end created
-  // ===============================================================
+  // ================================================================
   // METHODS
-  // ===============================================================
+  // ================================================================
   methods: {
+    // --------------------------------------------------------------
     // used by Skew ← → ↑ ↓
     linearTransform : function (useA, m){
       var xPolygon = useA ? this.aPolygon : this.dPolygon;
@@ -192,19 +219,22 @@ var vm = new Vue({
       isDirty(xPolygon);
       this.aIsMaster = useA;
     },
+    // --------------------------------------------------------------
     // should be changed
     roundPolygon : function (useA){
-      var xPolygon = useA ? this.aVertices : this.dVertices;
+      var xPolygon = useA ? this.aPolygon : this.dPolygon;
       var precision = useA ? this.aPrecision : this.dPrecision;
       var n = xPolygon.length; // number of points
 
       this.aIsMaster = useA;
 
       for (var i = 0; i < n; i++) {
-        xPolygon[i].cx = Math.round(xPolygon[i].cx*precision)/precision;
-        xPolygon[i].cy = Math.round(xPolygon[i].cy*precision)/precision;
+        xPolygon[i] = Math.round(xPolygon[i]*precision)/precision;
       }
+      isDirty(xPolygon);
     },
+    // --------------------------------------------------------------
+    // translate the polygon to put the centroid at zero
     centroidAtZero: function (useA) {
       var xPolygon = useA ? this.aPolygon : this.dPolygon;
       var centroidX = useA ? this.centroidA : this.centroidD;
@@ -213,19 +243,19 @@ var vm = new Vue({
       isDirty(xPolygon);
       this.aIsMaster = useA;
     },
+    // --------------------------------------------------------------
+    // translate the polygon to put APPROXIMATIVELY the Santaló point at zero
     santaloAtZero: function (useA){
       var xPolygon = useA ? this.aPolygon : this.dPolygon;
 
-      atzero(xPolygon,centroid(xPolygon));
-      for (var i = 0; i < 10; i++) {
-        translate(xPolygon,centroid(dualPolygon(xPolygon)));
-      };
+      santalo2zero(xPolygon,10);
       isDirty(xPolygon);
       this.aIsMaster = useA;
     },
     // ===============================================================
     // Ping-Pong
     // ===============================================================
+    // --------------------------------------------------------------
     startCentroidPingPong: function (){
       var ad = true;
       vm.cID = setInterval(function () {
@@ -233,11 +263,13 @@ var vm = new Vue({
         ad = !ad;
       }, 100);
     },
+    // --------------------------------------------------------------
     stopCentroidPingPong: function (){
       if(vm.cID)
         window.clearInterval(vm.cID);
       vm.cID = null;
     },
+    // --------------------------------------------------------------
     startSantaloPingPong: function (){
       var ad = true;
       vm.sID = setInterval(function () {
@@ -245,14 +277,16 @@ var vm = new Vue({
         ad = !ad;
       }, 100);
     },
+    // --------------------------------------------------------------
     stopSantaloPingPong: function (){
       if(vm.sID)
         window.clearInterval(vm.sID);
       vm.sID = null;
     },
-    // ===============================================================
+    // ==============================================================
     // Mouse interractions
-    // ===============================================================
+    // ==============================================================
+    // --------------------------------------------------------------
     addPoint: function addPoint(evt, ind, useA) {
       if(!evt.shiftKey)
         return;
@@ -271,7 +305,7 @@ var vm = new Vue({
       xPolygon.splice(2*(ind+1), 0, newPt.x, newPt.y);
       xSelected.splice(ind+1, 0, false);
     },
-    // ------------------
+    // --------------------------------------------------------------
     startMove: function startMove(evt, ind, useA) {
       var touch = evt.type === "touchstart";
       if (!touch && evt.button !== 0) return;
@@ -312,6 +346,7 @@ var vm = new Vue({
       getPos(evt, point);
       oldPt = point.matrixTransform(transform);
 
+      // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
       var updateFn = function updateFn() {
         if (moving) requestAnimationFrame(updateFn);
 
@@ -331,9 +366,11 @@ var vm = new Vue({
           isDirty(xPolygon);
         }
       };
+      // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
       var moveFn = function moveFn(evt) {
         return getPos(evt, point);
       };
+      // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
       var stopFn = function stopFn(evt) {
         moving = false;
         xSelected.$set(ind,afterSelected);
@@ -348,6 +385,8 @@ var vm = new Vue({
       svg.addEventListener(events.stop, stopFn);
       //this.stopPingPong()
     }, // end startMove
+    // --------------------------------------------------------------
+    // Set the example selected in the dropbox
     setExample: function setExample() {
       if (!this.selectedExample)
         return;
