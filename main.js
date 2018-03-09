@@ -400,8 +400,24 @@ var vm = new Vue({
       Vue.nextTick(function () {
         vm.selectedExample = {};
       });
+    }, // end startMove
+    // --------------------------------------------------------------
+    // Set the example selected in the dropbox
+    selectAll: function selectAll() {
+      var xSelected = this.aIsMaster ? this.aSelected : this.dSelected;
+      xSelected.fill(true);
+      isDirty(xSelected);
     }
-  } // end methods
+  }, // end methods
+  ready: function() {
+      window.addEventListener('keydown', function(event) {
+        // If ctrl+A was pressed...
+        if (event.keyCode == 65 && (event.ctrlKey || event.metaKey)) {
+          event.preventDefault();
+          vm.selectAll();
+        }
+      });
+    }
 });
 
 

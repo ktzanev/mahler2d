@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Macchina Convessa</title>
+  <title>Macchina Convessa PGL</title>
 
   <link rel="stylesheet" href="main.css">
 
@@ -162,7 +162,7 @@
         ) = {{(hessianDA[0]*hessianDA[3] - hessianDA[1]*hessianDA[2]).toFixed(4)}}
       </div>
       <hr>
-      <!-- ================== A ===================== -->
+      <!-- ================== D ===================== -->
       <input type="text" v-model="dString" class="string field">
       <span class="round colorD">Volume D: {{volumeD.toFixed(3)}}</span>
       <button @click="centroidAtZero(false)" class="round colorD">g(D)→0</button>
@@ -186,6 +186,7 @@
           <li><kbd>Shift+Click</kbd> on edge => add point;</li>
           <li><kbd>{{ useCtrl ? "Ctrl": "Cmd"}}+Click</kbd> on vertex => select/deselect it;</li>
           <li><kbd>Alt+Click</kbd> on vertex => select/deselect all.</li>
+          <li><kbd>{{ useCtrl ? "Ctrl": "Cmd"}}+A</kbd> => select/deselect it;</li>
         </ul>
         <div class="github-logo">
           <a href="https://github.com/ktzanev/mahler2d">
