@@ -45,7 +45,14 @@ body {
   fill:white;
   stroke:green;
 }
-
+.ainertia{
+  stroke:rgb(210,0,0);
+  fill:none;
+}
+.dinertia{
+  stroke:rgb(0,0,210);
+  fill:none;
+}
 /* Settings */
 
 .settings {

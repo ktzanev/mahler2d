@@ -23,6 +23,8 @@ var vm = new Vue({
       { title: "Local min with tr < 0",  aim: true,  data: "(0,2.738933751725064)(-0.81097131344343,-0.5490207249871223)(-0.9030767313033464,-1.4106316931345635)(0.9030767313033464,-1.4106316931345635)(0.81097131344343,-0.5490207249871223)" }
     ],
     selectedExample : {},
+    showEllipses: false, // shwo or not the ellipse of A
+    centerEllipses: "centroid", // shwo or not the ellipse of A
     cID: null, // setInterval ID for Centroid Ping-Pong
     sID: null, // setInterval ID for Santalo Ping-Pong
     useCtrl : navigator.userAgent.indexOf('Mac OS X') == -1 // true if PC, false if Mac
@@ -172,6 +174,14 @@ var vm = new Vue({
     hessianAD: function(){
       return matrixByScalar(-12*this.volumeD,matrixByMatrix(this.z2A,this.factorAD));
     },
+    inertiaA: function(){
+      var center = this.centerEllipses == "centroid" ? this.centroidA : {cx:0,cy:0};
+      return this.inertia(this.z2A,center,this.volumeA,this.showEllipses);
+    },
+    inertiaD: function(){
+      var center = this.centerEllipses == "centroid" ? this.centroidD : {cx:0,cy:0};
+      return this.inertia(this.z2D,center,this.volumeD,this.showEllipses);
+    },
     // ===============================================================
     // SVG parameters
     // *****************************************
@@ -212,6 +222,28 @@ var vm = new Vue({
   // METHODS
   // ================================================================
   methods: {
+    // --------------------------------------------------------------
+    // used by inertiaA and inertiaD
+    inertia: function(z2,centroid,volume,type){
+      var ba = matrix2ellipse(z2);
+      var transform = "rotate("+ba.theta*180/Math.PI+" "+centroid.cx+" "+centroid.cy+")"
+      var norm = 1;
+      switch (type){
+        case "normsqrtV":
+            norm = Math.sqrt(volume);
+          break;
+        case "normV":
+            norm = volume;
+          break;
+      }
+      return {
+        cx:centroid.cx,
+        cy:centroid.cy,
+        rx:ba.rx/norm,
+        ry:ba.ry/norm,
+        transform:transform
+      };
+    },
     // --------------------------------------------------------------
     // used by Skew ← → ↑ ↓
     linearTransform : function (useA, m){

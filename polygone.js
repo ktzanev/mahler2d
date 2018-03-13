@@ -130,7 +130,10 @@ function zxz(poly){
 
   return [z2x2/12,z2xy/12,z2xy/12,z2y2/12];
 }
-
+// -------------------------------------------------
+// calculate the product of two matrices
+// [a0,a2] [b0,b2]
+// [a1,a3] [b1,b3]
 function matrixByMatrix(a,b){
   return [
     a[0]*b[0]+a[2]*b[1],
@@ -139,6 +142,24 @@ function matrixByMatrix(a,b){
     a[1]*b[2]+a[3]*b[3]
   ];
 }
+// -------------------------------------------------
+// calculate the product of matrix by scalar
 function matrixByScalar(k,a){
   return [k*a[0],k*a[1],k*a[2],k*a[3]];
+}
+// -------------------------------------------------
+// calculate from quadratic form matrix the ellipse pareters
+// and return {rx,ry,theta} where theta (in radians) is the angle with rx
+function matrix2ellipse(q){
+  // if diagonal matrix
+  if (q[1] == 0){
+    return {rx:Math.sqrt(q[0]),ry:Math.sqrt(q[3]),theta:0};
+  }
+  var tr = q[0]+q[3];
+  var det = q[0]*q[3]-q[1]*q[1];
+  var delta = Math.sqrt(Math.abs(tr*tr-4*det)); // abs for preventing precision errors
+  var lx = (tr+delta)/2;
+  var ly = (tr-delta)/2;
+  var theta = Math.atan((lx-q[0])/q[1]);
+  return {rx:Math.sqrt(lx),ry:Math.sqrt(ly),theta:theta};
 }

@@ -25,6 +25,8 @@
       <circle v-bind="centroidD" v-bind:r="vertexSize" v-bind:stroke-width="vertexSize/3" class="dcentroid"></circle>
       <circle v-bind="centroidA" v-bind:r="vertexSize" v-bind:stroke-width="vertexSize/3" class="acentroid"></circle>
       <circle cx="0" cy="0" v-bind:r="vertexSize/2" v-bind:stroke-width="vertexSize/3" class="origin"></circle>
+      <ellipse v-if="showEllipses" v-bind="inertiaA" class="ainertia" v-bind:stroke-width="edgeWidth" />
+      <ellipse v-if="showEllipses" v-bind="inertiaD" class="dinertia" v-bind:stroke-width="edgeWidth" />
     </svg>
     <!-- ============================================ -->
     <div class="settings" v-cloak>
@@ -47,6 +49,21 @@
       <button @click="linearTransform(true,[1,-1,0,1])" class="round colorA">↓</button>
       <hr>
       <!-- ============= MIDDLE ===================== -->
+      Show inertia ellipses
+      <select v-model="showEllipses">
+        <option v-bind:value="false">no</option>
+        <option value="nonorm">not normalised</option>
+        <option value="normsqrtV">normalised by sqrt(V)</option>
+        <option value="normV">normalised by V</option>
+      </select>
+      <span v-if="showEllipses">
+        centered at
+        <select v-model="centerEllipses">
+          <option value="centroid">centroid</option>
+          <option value="zero">zero</option>
+        </select>
+      </span>
+      <hr>
       <button @click="startCentroidPingPong()" v-show="cID === null">start Centroid Ping-Pong</button>
       <button @click="stopCentroidPingPong()" v-show="cID !== null" class="stoppingpong">stop Centroid Ping-Pong</button>
       <button @click="startSantaloPingPong()" v-show="sID === null">start Santaló Ping-Pong</button>
