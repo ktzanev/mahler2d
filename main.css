@@ -46,11 +46,11 @@ body {
   stroke:green;
 }
 .ainertia{
-  stroke:rgb(210,0,0);
+  stroke:rgba(255,0,0,.7);
   fill:none;
 }
 .dinertia{
-  stroke:rgb(0,0,210);
+  stroke:rgba(0,0,255,.7);
   fill:none;
 }
 /* Settings */

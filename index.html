@@ -10,10 +10,20 @@
 <body>
   <div id="app">
     <svg class="graph" v-bind="graphPos" transform="scale(1,-1)">
+      <!-- grid -->
       <g v-for="n in netSize">
           <circle v-for="m in netSize" v-bind:cx="m-netOrigin" v-bind:cy="n-netOrigin" v-bind:r="integerPointSize" class="intpoint">
             <animate v-if="isInside(m-netOrigin,n-netOrigin)" attributeType="XML" repeatCount="indefinite" attributeName="fill" values="#f00;#f00;#fff" dur="0.7s" />
           </circle>
+      </g>
+      <!-- the ellipses -->
+      <g v-if="showEllipses">
+        <ellipse v-bind="inertiaA" class="ainertia" v-bind:stroke-width="edgeWidth" />
+        <line v-bind:x1="inertiaA.cx-2*inertiaA.rx" v-bind:y1="inertiaA.cy" v-bind:x2="inertiaA.cx+2*inertiaA.rx" v-bind:y2="inertiaA.cy" v-bind:transform="inertiaA.transform" class="ainertia" v-bind:stroke-width="edgeWidth/2" />
+        <line v-bind:x1="inertiaA.cx" v-bind:y1="inertiaA.cy-2*inertiaA.ry" v-bind:x2="inertiaA.cx" v-bind:y2="inertiaA.cy+2*inertiaA.ry" v-bind:transform="inertiaA.transform" class="ainertia" v-bind:stroke-width="edgeWidth/2" />
+        <ellipse v-bind="inertiaD" class="dinertia" v-bind:stroke-width="edgeWidth" />
+        <line v-bind:x1="inertiaD.cx-2*inertiaD.rx" v-bind:y1="inertiaD.cy" v-bind:x2="inertiaD.cx+2*inertiaD.rx" v-bind:y2="inertiaD.cy" v-bind:transform="inertiaD.transform" class="dinertia" v-bind:stroke-width="edgeWidth/2" />
+        <line v-bind:x1="inertiaD.cx" v-bind:y1="inertiaD.cy-2*inertiaD.ry" v-bind:x2="inertiaD.cx" v-bind:y2="inertiaD.cy+2*inertiaD.ry" v-bind:transform="inertiaD.transform" class="dinertia" v-bind:stroke-width="edgeWidth/2" />
       </g>
       <!-- edges -->
       <line v-for="(i,l) in dLines" v-bind="l" @mousedown.prevent="addPoint($event,i,false)" class="dualEdge" v-bind:stroke-width="edgeWidth"/>
@@ -25,8 +35,6 @@
       <circle v-bind="centroidD" v-bind:r="vertexSize" v-bind:stroke-width="vertexSize/3" class="dcentroid"></circle>
       <circle v-bind="centroidA" v-bind:r="vertexSize" v-bind:stroke-width="vertexSize/3" class="acentroid"></circle>
       <circle cx="0" cy="0" v-bind:r="vertexSize/2" v-bind:stroke-width="vertexSize/3" class="origin"></circle>
-      <ellipse v-if="showEllipses" v-bind="inertiaA" class="ainertia" v-bind:stroke-width="edgeWidth" />
-      <ellipse v-if="showEllipses" v-bind="inertiaD" class="dinertia" v-bind:stroke-width="edgeWidth" />
     </svg>
     <!-- ============================================ -->
     <div class="settings" v-cloak>
