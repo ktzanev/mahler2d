@@ -48,6 +48,7 @@
       <!-- ================== A ===================== -->
       <input type="text" v-model="aString" class="string field">
       <span class="round colorA">Volume A: {{volumeA.toFixed(3)}}</span>
+      <button @click="toIsotropic(true)" class="round colorA">Isotropic</button>
       <button @click="centroidAtZero(true)" class="round colorA">g(A)→0</button>
       <button @click="santaloAtZero(true)" class="round colorA">s(A)~>0</button>
       Transform :
@@ -190,6 +191,7 @@
       <!-- ================== D ===================== -->
       <input type="text" v-model="dString" class="string field">
       <span class="round colorD">Volume D: {{volumeD.toFixed(3)}}</span>
+      <button @click="toIsotropic(false)" class="round colorD">Isotropic</button>
       <button @click="centroidAtZero(false)" class="round colorD">g(D)→0</button>
       <button @click="santaloAtZero(false)" class="round colorD">s(D)~>0</button>
       Transform :

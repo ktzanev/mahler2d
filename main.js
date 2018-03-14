@@ -286,6 +286,28 @@ var vm = new Vue({
       isDirty(xPolygon);
       this.aIsMaster = useA;
     },
+    // --------------------------------------------------------------
+    // translate the polygon to put the centroid at zero
+    toIsotropic: function (useA) {
+      var xPolygon = useA ? this.aPolygon : this.dPolygon;
+      var centroidX = useA ? this.centroidA : this.centroidD;
+      var sqrtVolX = Math.sqrt(useA ? this.volumeA : this.volumeD);
+
+      atzero(xPolygon, [centroidX.cx,centroidX.cy]);
+
+      var z2 = zxz(xPolygon);
+      var ba = matrix2ellipse(z2,[0,0]);
+      var t = ba.theta;
+      transform(xPolygon,[Math.cos(t),-Math.sin(t),Math.sin(t),Math.cos(t)]);
+      transform(xPolygon,[sqrtVolX/ba.rx,0,0,sqrtVolX/ba.ry]);
+      transform(xPolygon,[Math.cos(t),Math.sin(t),-Math.sin(t),Math.cos(t)]);
+
+      var k = Math.sqrt(Math.sqrt(this.volumeAD)/volume(xPolygon));
+      transform(xPolygon,[k,0,0,k]);
+
+      isDirty(xPolygon);
+      this.aIsMaster = useA;
+    },
     // ===============================================================
     // Ping-Pong
     // ===============================================================
