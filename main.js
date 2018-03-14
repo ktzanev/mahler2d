@@ -226,7 +226,7 @@ var vm = new Vue({
     // --------------------------------------------------------------
     // used by inertiaA and inertiaD
     inertia: function(z2,centroid,volume,type){
-      var ba = matrix2ellipse(z2);
+      var ba = matrix2ellipse(z2,[centroid.cx*Math.sqrt(volume),centroid.cy*Math.sqrt(volume)]);
       var transform = "rotate("+ba.theta*180/Math.PI+" "+centroid.cx+" "+centroid.cy+")"
       var norm = 1;
       switch (type){

@@ -57,7 +57,7 @@ function centroid(poly){
   var n = poly.length; // number of points
   var d; // temporary determinant
   var a = 0; // the total area (up to sign)
-  var x = 0, y = 0; // (x,y) will be the centroid
+  var x = 0, y = 0; // (x/3/a,y/3/a) will be the centroid
 
   for (var i = n-2, j = 0; i >= 0; i-=2, j = i+2) {
     d = Math.abs(determinant(poly[i],poly[i+1],poly[j],poly[j+1]));
@@ -150,16 +150,17 @@ function matrixByScalar(k,a){
 // -------------------------------------------------
 // calculate from quadratic form matrix the ellipse pareters
 // and return {rx,ry,theta} where theta (in radians) is the angle with rx
-function matrix2ellipse(q){
+function matrix2ellipse(q,c){
+  var e = [q[0]-c[0]*c[0],q[1]-c[0]*c[1],q[2]-c[1]*c[0],q[3]-c[1]*c[1]];
   // if diagonal matrix
-  if (q[1] == 0){
-    return {rx:Math.sqrt(q[0]),ry:Math.sqrt(q[3]),theta:0};
+  if (e[1] == 0){
+    return {rx:Math.sqrt(e[0]),ry:Math.sqrt(e[3]),theta:0};
   }
-  var tr = q[0]+q[3];
-  var det = q[0]*q[3]-q[1]*q[1];
+  var tr = e[0]+e[3];
+  var det = e[0]*e[3]-e[1]*e[1];
   var delta = Math.sqrt(Math.abs(tr*tr-4*det)); // abs for preventing precision errors
   var lx = (tr+delta)/2;
   var ly = (tr-delta)/2;
-  var theta = Math.atan((lx-q[0])/q[1]);
+  var theta = Math.atan((lx-e[0])/e[1]);
   return {rx:Math.sqrt(lx),ry:Math.sqrt(ly),theta:theta};
 }
