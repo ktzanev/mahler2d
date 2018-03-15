@@ -24,8 +24,10 @@ var vm = new Vue({
       { title: "Local min with offset ellipses",  aim: true,  data: "(0.6823290855758224,-1.3212840710144018)(1.24183716331364,1.076296918677146)(-0.21606907055895674,1.4572914322587038)(-1.3572928337167007,0.3965484708766234)(-0.36537724128850724,-1.6925166803381313)" }
     ],
     selectedExample : {},
-    showEllipses: "normV", // shwo or not the ellipse of A
-    centerEllipses: "zero", // shwo or not the ellipse of A
+    isotropicPositionA : false, //
+    showEllipses: "4normsqrtV", // show or not the ellipse of A ?
+    centerEllipses: "zero", // centerd at zero or at the centroid ?
+    showBinet: true, // show Binet or dual Binet of A ?
     cID: null, // setInterval ID for Centroid Ping-Pong
     sID: null, // setInterval ID for Santalo Ping-Pong
     useCtrl : navigator.userAgent.indexOf('Mac OS X') == -1 // true if PC, false if Mac
@@ -82,6 +84,9 @@ var vm = new Vue({
         this.aSelected = Array(this.aPolygon.length/2).fill(false);
         this.aIsMaster = true;
         polystr2localStorage(str,true);
+        Vue.nextTick(function () {
+          vm.toIsotropicA(); // set A to isotropic position if needed
+        });
       }
     },
     // *****************************************
@@ -101,6 +106,9 @@ var vm = new Vue({
         this.dSelected = Array(this.dPolygon.length/2).fill(false);
         this.aIsMaster = false;
         polystr2localStorage(str,false);
+        Vue.nextTick(function () {
+          vm.toIsotropicA(); // set A to isotropic position if needed
+        });
       }
     },
     // *****************************************
@@ -177,11 +185,27 @@ var vm = new Vue({
     },
     inertiaA: function(){
       var center = this.centerEllipses == "centroid" ? this.centroidA : {cx:0,cy:0};
-      return this.inertia(this.z2A,center,this.volumeA,this.showEllipses);
+      var i = this.inertia(this.z2A,center,this.volumeA,this.showEllipses);
+      if (this.showBinet) {
+        i.rx = 1/i.rx;
+        i.ry = 1/i.ry;
+      }
+      return i;
     },
     inertiaD: function(){
       var center = this.centerEllipses == "centroid" ? this.centroidD : {cx:0,cy:0};
       return this.inertia(this.z2D,center,this.volumeD,this.showEllipses);
+    },
+    isotropicPositionASetter : {
+      set: function(newI){
+        this.isotropicPositionA = newI;
+        if (newI){
+          this.toIsotropicA();
+        }
+      },
+      get: function(){
+        return this.isotropicPositionA;
+      }
     },
     // ===============================================================
     // SVG parameters
@@ -232,6 +256,9 @@ var vm = new Vue({
       switch (type){
         case "normsqrtV":
             norm = Math.sqrt(volume);
+          break;
+        case "4normsqrtV":
+            norm = Math.sqrt(volume)/2;
           break;
         case "normV":
             norm = volume;
@@ -287,26 +314,52 @@ var vm = new Vue({
       this.aIsMaster = useA;
     },
     // --------------------------------------------------------------
-    // translate the polygon to put the centroid at zero
-    toIsotropic: function (useA) {
-      var xPolygon = useA ? this.aPolygon : this.dPolygon;
-      var centroidX = useA ? this.centroidA : this.centroidD;
-      var sqrtVolX = Math.sqrt(useA ? this.volumeA : this.volumeD);
+    // pout the A polygone in isotropic position
+    toIsotropicA: function () {
+      if (!this.isotropicPositionA){
+        return;
+      }
+      var aPolygon = this.aPolygon;
+      atzero(aPolygon, centroid(aPolygon));
 
-      atzero(xPolygon, [centroidX.cx,centroidX.cy]);
-
-      var z2 = zxz(xPolygon);
+      var z2 = zxz(aPolygon);
       var ba = matrix2ellipse(z2,[0,0]);
       var t = ba.theta;
-      transform(xPolygon,[Math.cos(t),-Math.sin(t),Math.sin(t),Math.cos(t)]);
-      transform(xPolygon,[sqrtVolX/ba.rx,0,0,sqrtVolX/ba.ry]);
-      transform(xPolygon,[Math.cos(t),Math.sin(t),-Math.sin(t),Math.cos(t)]);
-
-      var k = Math.sqrt(Math.sqrt(this.volumeAD)/volume(xPolygon));
-      transform(xPolygon,[k,0,0,k]);
-
-      isDirty(xPolygon);
-      this.aIsMaster = useA;
+      var kx = 1, ky = 1;
+      var k = 1;
+      switch(this.isotropicPositionA) {
+        case "Ĩ=1":
+            k = Math.sqrt(volume(aPolygon));
+            kx = k/ba.rx;
+            ky = k/ba.ry;
+          break;
+        case "I=1":
+            kx = Math.pow(ba.ry,1/4)/Math.pow(ba.rx,3/4);
+            ky = Math.pow(ba.rx,1/4)/Math.pow(ba.ry,3/4);
+          break;
+        case "VA=VD":
+            k = Math.pow(volume(dualPolygon(aPolygon))/volume(aPolygon),1/4);
+            kx = k*Math.sqrt(ba.ry/ba.rx);
+            ky = k*Math.sqrt(ba.rx/ba.ry);
+          break;
+        case "VA=1":
+            k = Math.sqrt(volume(aPolygon));
+            kx = Math.sqrt(ba.ry/ba.rx)/k;
+            ky = Math.sqrt(ba.rx/ba.ry)/k;
+            // kx = ba.ry/(sqrtVolX*sqrtVolX);
+            // ky = ba.rx/(sqrtVolX*sqrtVolX);
+          break;
+        case "keep VA":
+            kx = Math.sqrt(ba.ry/ba.rx);
+            ky = Math.sqrt(ba.rx/ba.ry);
+          break;
+      }
+      transform(aPolygon,[Math.cos(t),-Math.sin(t),Math.sin(t),Math.cos(t)]);
+      transform(aPolygon,[kx,0,0,ky]);
+      transform(aPolygon,[Math.cos(t),Math.sin(t),-Math.sin(t),Math.cos(t)]);
+      // redraw it
+      this.aIsMaster = true;
+      isDirty(aPolygon);
     },
     // ===============================================================
     // Ping-Pong
@@ -324,6 +377,9 @@ var vm = new Vue({
       if(vm.cID)
         window.clearInterval(vm.cID);
       vm.cID = null;
+      Vue.nextTick(function () {
+        vm.toIsotropicA(); // set A to isotropic position if needed
+      });
     },
     // --------------------------------------------------------------
     startSantaloPingPong: function (){
@@ -338,6 +394,9 @@ var vm = new Vue({
       if(vm.sID)
         window.clearInterval(vm.sID);
       vm.sID = null;
+      Vue.nextTick(function () {
+        vm.toIsotropicA(); // set A to isotropic position if needed
+      });
     },
     // ==============================================================
     // Mouse interractions
@@ -432,6 +491,9 @@ var vm = new Vue({
         xSelected.$set(ind,afterSelected);
         svg.removeEventListener(events.move, moveFn);
         svg.removeEventListener(events.stop, stopFn);
+        Vue.nextTick(function () {
+          vm.toIsotropicA(); // set A to isotropic position if needed
+        });
       };
 
       requestAnimationFrame(updateFn);
@@ -454,6 +516,7 @@ var vm = new Vue({
       // reset
       Vue.nextTick(function () {
         vm.selectedExample = {};
+        vm.toIsotropicA(); // set A to isotropic position if needed
       });
     }, // end startMove
     // --------------------------------------------------------------

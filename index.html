@@ -48,22 +48,35 @@
       <!-- ================== A ===================== -->
       <input type="text" v-model="aString" class="string field">
       <span class="round colorA">Volume A: {{volumeA.toFixed(3)}}</span>
-      <button @click="toIsotropic(true)" class="round colorA">Isotropic</button>
       <button @click="centroidAtZero(true)" class="round colorA">g(A)→0</button>
       <button @click="santaloAtZero(true)" class="round colorA">s(A)~>0</button>
-      Transform :
-      <button @click="linearTransform(true,[1,0,-1,1])" class="round colorA">←</button>
-      <button @click="linearTransform(true,[1,0,1,1])" class="round colorA">→</button>
-      <button @click="linearTransform(true,[1,1,0,1])" class="round colorA">↑</button>
-      <button @click="linearTransform(true,[1,-1,0,1])" class="round colorA">↓</button>
+      <div class="controlblock">
+        Transform :
+        <button @click="linearTransform(true,[1,0,-1,1])" class="round colorA">←</button>
+        <button @click="linearTransform(true,[1,0,1,1])" class="round colorA">→</button>
+        <button @click="linearTransform(true,[1,1,0,1])" class="round colorA">↑</button>
+        <button @click="linearTransform(true,[1,-1,0,1])" class="round colorA">↓</button>
+      </div>
+      <div class="controlblock">
+        In isotropic position:
+        <select v-model="isotropicPositionASetter">
+          <option v-bind:value="false">no</option>
+          <option value="Ĩ=1">Ĩ=1</option>
+          <option value="I=1">I=1</option>
+          <option value="VA=VD">VA=VD</option>
+          <option value="VA=1">VA=1</option>
+          <option value="keep VA">keep VA</option>
+        </select>
+      </div>
       <hr>
       <!-- ============= MIDDLE ===================== -->
       Show inertia ellipses
       <select v-model="showEllipses">
         <option v-bind:value="false">no</option>
-        <option value="nonorm">not normalised</option>
-        <option value="normsqrtV">normalised by sqrt(V)</option>
-        <option value="normV">normalised by V</option>
+        <option value="nonorm">of I</option>
+        <option value="normsqrtV">of Ĩ = I/vol</option>
+        <option value="4normsqrtV">of 4Ĩ</option>
+        <option value="normV">of Ĩ/vol</option>
       </select>
       <span v-if="showEllipses">
         centered at
@@ -71,7 +84,14 @@
           <option value="centroid">centroid</option>
           <option value="zero">zero</option>
         </select>
+        <select v-model="showBinet">
+          <option v-bind:value="false">dual Binet vs dual Binet</option>
+          <option v-bind:value="true">Binet vs dual Binet</option>
+        </select>
       </span>
+      <div v-if="showEllipses=='4normsqrtV' && showBinet" class="conjecture">
+        Conjecture : the red is not in the blue (at critical ? isotropic ? position).
+      </div>
       <hr>
       <button @click="startCentroidPingPong()" v-show="cID === null">start Centroid Ping-Pong</button>
       <button @click="stopCentroidPingPong()" v-show="cID !== null" class="stoppingpong">stop Centroid Ping-Pong</button>
@@ -191,14 +211,15 @@
       <!-- ================== D ===================== -->
       <input type="text" v-model="dString" class="string field">
       <span class="round colorD">Volume D: {{volumeD.toFixed(3)}}</span>
-      <button @click="toIsotropic(false)" class="round colorD">Isotropic</button>
       <button @click="centroidAtZero(false)" class="round colorD">g(D)→0</button>
       <button @click="santaloAtZero(false)" class="round colorD">s(D)~>0</button>
-      Transform :
-      <button @click="linearTransform(false,[1,0,-1,1])" class="round colorD">←</button>
-      <button @click="linearTransform(false,[1,0,1,1])" class="round colorD">→</button>
-      <button @click="linearTransform(false,[1,1,0,1])" class="round colorD">↑</button>
-      <button @click="linearTransform(false,[1,-1,0,1])" class="round colorD">↓</button>
+      <div class="controlblock">
+        Transform :
+        <button @click="linearTransform(false,[1,0,-1,1])" class="round colorD">←</button>
+        <button @click="linearTransform(false,[1,0,1,1])" class="round colorD">→</button>
+        <button @click="linearTransform(false,[1,1,0,1])" class="round colorD">↑</button>
+        <button @click="linearTransform(false,[1,-1,0,1])" class="round colorD">↓</button>
+      </div>
       <hr>
       <!-- ============= CONTROLS ===================== -->
       <div class="controls">

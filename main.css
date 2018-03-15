@@ -91,6 +91,15 @@ body {
 .stoppingpong {
   background-color: lightgreen;
 }
+.controlblock {
+  display: inline-block;
+  margin-top: .21em;
+}
+.conjecture {
+  color:red;
+  margin: .21em 0em 0em 0em;
+  display: inline-block;
+}
 .hessian {
   display: inline-block;
   padding: .35em;
