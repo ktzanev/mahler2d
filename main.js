@@ -7,11 +7,11 @@ var vm = new Vue({
     dSelected: [], // the selection status of D vertices like [true,false,...]
     aIsMaster : true, // decide the master / slave relation between A and D
     graphSize : 7, // the number of visible integer points, used to Zoom in and out
-    vertexSize : .05, // the radious of vertices
-    edgeWidth : .035, // the width ot the edges
-    integerPointSize : .049, // the radious of all integer points
-    aPrecision : 4, // the parameter used to round un to 1/aPrecision
-    dPrecision : 4, // the parameter used to round un to 1/dPrecision
+    vertexSize : .05, // the radius of vertices
+    edgeWidth : .035, // the width of the edges
+    integerPointSize : .049, // the radius of all integer points
+    aPrecision : 4, // the parameter used to round up to 1/aPrecision
+    dPrecision : 4, // the parameter used to round up to 1/dPrecision
     // some examples
     examples : [
       { title: "Convex Asymetric 3/2",   aim: true,  data: "(0,1)(1,0)(-1,-1)" },
@@ -26,7 +26,7 @@ var vm = new Vue({
     selectedExample : {},
     isotropicPositionA : false, //
     showEllipses: "4normsqrtV", // show or not the ellipse of A ?
-    centerEllipses: "zero", // centerd at zero or at the centroid ?
+    centerEllipses: "zero", // centered at zero or at the centroid ?
     showBinet: true, // show Binet or dual Binet of A ?
     cID: null, // setInterval ID for Centroid Ping-Pong
     sID: null, // setInterval ID for Santalo Ping-Pong
@@ -68,7 +68,7 @@ var vm = new Vue({
       return vertices(this.dPolygon, this.dSelected);
     },
     // *****************************************
-    // the string replresentation of A like "(x1,y1)(x2,y2)..."
+    // the string representation of A like "(x1,y1)(x2,y2)..."
     aString: {
       // getter
       get: function () {
@@ -90,7 +90,7 @@ var vm = new Vue({
       }
     },
     // *****************************************
-    // the string replresentation of D like "(x1,y1)(x2,y2)..."
+    // the string representation of D like "(x1,y1)(x2,y2)..."
     dString: {
       // getter
       get: function () {
@@ -314,7 +314,7 @@ var vm = new Vue({
       this.aIsMaster = useA;
     },
     // --------------------------------------------------------------
-    // pout the A polygone in isotropic position
+    // pout the A polygon in isotropic position
     toIsotropicA: function () {
       if (!this.isotropicPositionA){
         return;
@@ -399,7 +399,7 @@ var vm = new Vue({
       });
     },
     // ==============================================================
-    // Mouse interractions
+    // Mouse interactions
     // ==============================================================
     // --------------------------------------------------------------
     addPoint: function addPoint(evt, ind, useA) {
@@ -443,8 +443,8 @@ var vm = new Vue({
       {
         afterSelected = !xSelected[ind];
       } else if (evt.altKey) {
-        afterSelected = true;
-        xSelected.fill(true);
+        afterSelected = !xSelected.reduce((a,s) => a && s,true);
+        xSelected.fill(afterSelected);
       } else {
         afterSelected = xSelected[ind];
         if (!xSelected[ind]) {
@@ -530,7 +530,7 @@ var vm = new Vue({
   ready: function() {
       window.addEventListener('keydown', function(event) {
         // If ctrl+A was pressed...
-        if (event.keyCode == 65 && (event.ctrlKey || event.metaKey)) {
+        if (event.keyCode == 65 && (event.ctrlKey || event.metaKey) && document.activeElement.type != "text") {
           event.preventDefault();
           vm.selectAll();
         }
@@ -565,8 +565,8 @@ function vertices(poly,sel){
 }
 
 //----------------------------------------------
-// create edges aray like [{x1,y1,x2,y2},...]
-// from plygon array like [x1,y1,x2,y2,...]
+// create edges array like [{x1,y1,x2,y2},...]
+// from polygon array like [x1,y1,x2,y2,...]
 function edgesOfPolygon(poly){
   var n = poly.length; // number of points
   var edges = new Array(); // will contain all the edges like {x1,y1,x2,y2}
@@ -595,7 +595,7 @@ function polygon2string(poly){
 }
 
 //----------------------------------------------
-// convert string to poly array
+// convert string to polygon array
 function string2polygon(str){
   return str.replace(/^[^-0-9.e]*|[^-0-9.e]*$/g,"").split(/[^-0-9.e]+/).map(parseFloat);
 }
@@ -612,7 +612,7 @@ function polystr2localStorage(str,aIsMaster){
 }
 
 //----------------------------------------------
-// pointer position fo PC and tablet/phone
+// pointer position of PC and tablet/phone
 function getMousePos(mouseEvent, point) {
   point.x = mouseEvent.clientX;
   point.y = mouseEvent.clientY;
