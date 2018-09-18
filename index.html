@@ -68,29 +68,30 @@
           <option value="keep VA">keep VA</option>
         </select>
       </div>
+      <br>
+      <div class="controlblock colorA">
+        Show
+        <select v-model="showEllipses">
+          <option v-bind:value="false">no ellipse</option>
+          <option value="standard">standard</option>
+          <option value="normalized">normalized</option>
+        </select>
+        <span v-if="showEllipses">
+          <select v-model="ellipseTypeA">
+            <option value="binet">Binet</option>
+            <option value="legendre">Legendre</option>
+          </select>
+          centered at
+          <select v-model="centerEllipses">
+            <option value="centroid">centroid</option>
+            <option value="zero">zero</option>
+          </select>
+        </span>
+      </div>
       <hr>
       <!-- ============= MIDDLE ===================== -->
-      Show inertia ellipses
-      <select v-model="showEllipses">
-        <option v-bind:value="false">no</option>
-        <option value="nonorm">of I</option>
-        <option value="normsqrtV">of Ĩ = I/vol</option>
-        <option value="4normsqrtV">of 4Ĩ</option>
-        <option value="normV">of Ĩ/vol</option>
-      </select>
-      <span v-if="showEllipses">
-        centered at
-        <select v-model="centerEllipses">
-          <option value="centroid">centroid</option>
-          <option value="zero">zero</option>
-        </select>
-        <select v-model="showBinet">
-          <option v-bind:value="false">dual Binet vs dual Binet</option>
-          <option v-bind:value="true">Binet vs dual Binet</option>
-        </select>
-      </span>
-      <div v-if="showEllipses=='4normsqrtV' && showBinet" class="conjecture">
-        Conjecture : the red is not in the blue (at critical ? isotropic ? position).
+      <div v-if="showEllipses=='normalized' && ellipseTypeA != ellipseTypeD" class="conjecture">
+        Conjecture : The normalized Binet <b>is not inside</b> the normalized Legendre of the dual (at critical ? isotropic ? position).
       </div>
       <hr>
       <button @click="startCentroidPingPong()" v-show="cID === null">start Centroid Ping-Pong</button>
@@ -219,6 +220,26 @@
         <button @click="linearTransform(false,[1,0,1,1])" class="round colorD">→</button>
         <button @click="linearTransform(false,[1,1,0,1])" class="round colorD">↑</button>
         <button @click="linearTransform(false,[1,-1,0,1])" class="round colorD">↓</button>
+      </div>
+      <br>
+      <div class="controlblock colorD">
+        Show
+        <select v-model="showEllipses">
+          <option v-bind:value="false">no ellipse</option>
+          <option value="standard">standard</option>
+          <option value="normalized">normalized</option>
+        </select>
+        <span v-if="showEllipses">
+          <select v-model="ellipseTypeD">
+            <option value="binet">Binet</option>
+            <option value="legendre">Legendre</option>
+          </select>
+          centered at
+          <select v-model="centerEllipses">
+            <option value="centroid">centroid</option>
+            <option value="zero">zero</option>
+          </select>
+        </span>
       </div>
       <hr>
       <!-- ============= CONTROLS ===================== -->

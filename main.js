@@ -25,9 +25,10 @@ var vm = new Vue({
     ],
     selectedExample : {},
     isotropicPositionA : false, //
-    showEllipses: "4normsqrtV", // show or not the ellipse of A ?
+    showEllipses: "normalized", // show or not the ellipse of A and D (normalized or not)?
     centerEllipses: "zero", // centered at zero or at the centroid ?
-    showBinet: true, // show Binet or dual Binet of A ?
+    ellipseTypeA: "binet", // which ellipse of A ?
+    ellipseTypeD: "legendre", // which ellipse of D ?
     cID: null, // setInterval ID for Centroid Ping-Pong
     sID: null, // setInterval ID for Santalo Ping-Pong
     useCtrl : navigator.userAgent.indexOf('Mac OS X') == -1 // true if PC, false if Mac
@@ -186,7 +187,7 @@ var vm = new Vue({
     inertiaA: function(){
       var center = this.centerEllipses == "centroid" ? this.centroidA : {cx:0,cy:0};
       var i = this.inertia(this.z2A,center,this.volumeA,this.showEllipses);
-      if (this.showBinet) {
+      if (this.ellipseTypeA == "binet") {
         i.rx = 1/i.rx;
         i.ry = 1/i.ry;
       }
@@ -194,7 +195,12 @@ var vm = new Vue({
     },
     inertiaD: function(){
       var center = this.centerEllipses == "centroid" ? this.centroidD : {cx:0,cy:0};
-      return this.inertia(this.z2D,center,this.volumeD,this.showEllipses);
+      var i = this.inertia(this.z2D,center,this.volumeD,this.showEllipses);
+      if (this.ellipseTypeD == "binet") {
+        i.rx = 1/i.rx;
+        i.ry = 1/i.ry;
+      }
+      return i;
     },
     isotropicPositionASetter : {
       set: function(newI){
@@ -252,18 +258,19 @@ var vm = new Vue({
     inertia: function(z2,centroid,volume,type){
       var ba = matrix2ellipse(z2,[centroid.cx*Math.sqrt(volume),centroid.cy*Math.sqrt(volume)]);
       var transform = "rotate("+ba.theta*180/Math.PI+" "+centroid.cx+" "+centroid.cy+")"
-      var norm = 1;
-      switch (type){
-        case "normsqrtV":
-            norm = Math.sqrt(volume);
-          break;
-        case "4normsqrtV":
-            norm = Math.sqrt(volume)/2;
-          break;
-        case "normV":
-            norm = volume;
-          break;
-      }
+      var norm = (type == "normalized") ? Math.sqrt(volume)/2 : 1; // normalization factor
+      // Not used any more
+      // switch (type){
+      //   case "normsqrtV": // not used any more
+      //       norm = Math.sqrt(volume);
+      //     break;
+      //   case "4normsqrtV":
+      //       norm = Math.sqrt(volume)/2;
+      //     break;
+      //   case "normV": // not used any more
+      //       norm = volume;
+      //     break;
+      // }
       return {
         cx:centroid.cx,
         cy:centroid.cy,

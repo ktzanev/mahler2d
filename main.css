@@ -93,7 +93,7 @@ body {
 }
 .controlblock {
   display: inline-block;
-  margin-top: .21em;
+  padding:.21em;
 }
 .conjecture {
   color:red;
