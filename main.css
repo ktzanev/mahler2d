@@ -2,6 +2,16 @@ body {
   margin: 0px;
 }
 
+a {
+  text-decoration: none;
+}
+a:hover {
+  text-decoration: underline;
+}
+a.pgllink {
+  margin-left: 1em;
+}
+
 /* SVG */
 
 .graph {

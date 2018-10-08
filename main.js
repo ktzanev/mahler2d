@@ -254,15 +254,25 @@ var vm = new Vue({
   // ================================================================
   // when the app is starting ...
   created: function () {
-    try {
-      this.aIsMaster = JSON.parse(localStorage.getItem("aIsMaster", "true"));
-      if (this.aIsMaster)
-        this.aString = localStorage.getItem("polygoneStr", "(0,1)(1,0)(-1,-1)(-2,-1)");
-      else
-        this.dString = localStorage.getItem("polygoneStr", "(0,1)(1,0)(-1,-1)(-2,-1)");
-    } catch(e) {
+    var urla = /a=([^&]*)/.exec(window.location.search);
+    if (urla && urla.length > 1){
+      // get the coordinates from the 'a' get parameter
+      this.aString = decodeURIComponent(urla[1]);
       this.aIsMaster = true;
-      this.aString = "(0,1)(1,0)(-1,-1)(-2,-1)";
+    }
+    else{
+      try {
+        // try to get the coordinates from the local storage
+        this.aIsMaster = JSON.parse(localStorage.getItem("aIsMaster", "true"));
+        if (this.aIsMaster)
+          this.aString = localStorage.getItem("polygoneStr", "(0,1)(1,0)(-1,-1)(-2,-1)");
+        else
+          this.dString = localStorage.getItem("polygoneStr", "(0,1)(1,0)(-1,-1)(-2,-1)");
+      } catch(e) {
+        // set a default polygon
+        this.aString = "(0,1)(1,0)(-1,-1)(-2,-1)";
+        this.aIsMaster = true;
+      }
     }
   }, // end created
   // ================================================================
