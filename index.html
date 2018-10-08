@@ -43,7 +43,9 @@
         <option v-for="e in examples" v-bind:value="e">
           {{ e.title }}
         </option>
-      </select><br>
+      </select>
+      <span v-if="!isSymetric"><button @click="makeSymetric()">Make it symetric</button></span>
+      <br>
       <hr>
       <!-- ================== A ===================== -->
       <input type="text" v-model="aString" class="string field">

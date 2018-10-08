@@ -231,6 +231,22 @@ var vm = new Vue({
     // *****************************************
     netOrigin: function() {
       return Math.floor(this.graphSize/2) + 1;
+    },
+    isSymetric: function() {
+      const symprecision = 1e-10;
+      if ( !this.aPolygon ){
+        return false;
+      }
+      var n = this.aPolygon.length;
+      if (n%4) {
+        return false;
+      }
+      for (var i = 0; i < n/2; i++) {
+        if (Math.abs(this.aPolygon[i]+this.aPolygon[i+n/2]) > symprecision){
+          return false;
+        }
+      }
+      return true;
     }
   }, // end computed
   // ================================================================
@@ -367,6 +383,14 @@ var vm = new Vue({
       // redraw it
       this.aIsMaster = true;
       isDirty(aPolygon);
+    },
+    makeSymetric: function () {
+      var xPolygon = this.aIsMaster ? this.aPolygon : this.dPolygon;
+      var n = 2*Math.round(xPolygon.length/4);
+      for (var i = 0; i < n; i++) {
+        xPolygon[i+n] = -xPolygon[i];
+      }
+      isDirty(xPolygon);
     },
     // ===============================================================
     // Ping-Pong
