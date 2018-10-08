@@ -274,6 +274,9 @@ var vm = new Vue({
         this.aIsMaster = true;
       }
     }
+    if (/[&?]c/.exec(window.location.search)){
+      this.centroidAtZero(true)
+    }
   }, // end created
   // ================================================================
   // METHODS
