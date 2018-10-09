@@ -275,7 +275,7 @@ var vm = new Vue({
       }
     }
     if (/[&?]c/.exec(window.location.search)){
-      this.centroidAtZero(true)
+      this.centroidAtZero(true);
     }
   }, // end created
   // ================================================================
@@ -335,8 +335,15 @@ var vm = new Vue({
     centroidAtZero: function (useA) {
       var xPolygon = useA ? this.aPolygon : this.dPolygon;
       var centroidX = useA ? this.centroidA : this.centroidD;
+      var c = [centroidX.cx,centroidX.cy];
+      const centerprecision = 1e-10;
 
-      atzero(xPolygon, [centroidX.cx,centroidX.cy]);
+      // iterate because the centroid is not exact if 0 is outside
+      do {
+        atzero(xPolygon, c);
+        c = centroid(xPolygon);
+      } while (Math.abs(c[0]) + Math.abs(c[0]) > centerprecision);
+
       isDirty(xPolygon);
       this.aIsMaster = useA;
     },
