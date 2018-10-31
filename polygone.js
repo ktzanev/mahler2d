@@ -56,7 +56,7 @@ function volume(poly){
 function centroid(poly){
   var n = poly.length; // number of points
   var d; // temporary determinant
-  var a = 0; // the total area (up to sign)
+  var a = 0; // the total area (if 0 is inside)
   var x = 0, y = 0; // (x/3/a,y/3/a) will be the centroid
 
   for (var i = n-2, j = 0; i >= 0; i-=2, j = i+2) {
@@ -129,6 +129,25 @@ function zxz(poly){
   }
 
   return [z2x2/12,z2xy/12,z2xy/12,z2y2/12];
+}
+// -------------------------------------------------
+// return the Lutwak-Yang-Zhang tensor
+function lyz(poly){
+  var n = poly.length; // number of points
+  var d; // temporary determinant
+  var a = 0; // the total area (if 0 is inside)
+  var lyz_x2 = 0, lyz_y2 = 0, lyz_xy=0; // the lyz will be [x2 xy; xy y2]
+
+  for (var i = n-2, j = 0; i >= 0; i-=2, j = i+2) {
+    d = Math.abs(determinant(poly[i],poly[i+1],poly[j],poly[j+1]));
+    if (d==0) return [0,0,0,0];
+    a += d;
+    lyz_x2 += (poly[i+1]-poly[j+1])*(poly[i+1]-poly[j+1])/d;
+    lyz_y2 += (poly[i]-poly[j])*(poly[i]-poly[j])/d;
+    lyz_xy += (poly[i]-poly[j])*(poly[j+1]-poly[i+1])/d;
+  }
+  a = a/2;
+  return [lyz_x2/a,lyz_xy/a,lyz_xy/a,lyz_y2/a];
 }
 // -------------------------------------------------
 // calculate the product of two matrices

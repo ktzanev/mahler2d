@@ -153,6 +153,16 @@ var vm = new Vue({
       return zxz(this.dPolygon);
     },
     // *****************************************
+    // Lutwak-Yang-Zhang for A
+    lyzA: function(){
+      return lyz(this.aPolygon);
+    },
+    // *****************************************
+    // Lutwak-Yang-Zhang for D
+    lyzD: function(){
+      return lyz(this.dPolygon);
+    },
+    // *****************************************
     // second matrix factor of the Hessian (if DA)
     factorDA: function(){
       var z2DA = matrixByMatrix(this.z2D,this.z2A);
@@ -185,18 +195,30 @@ var vm = new Vue({
       return matrixByScalar(-12*this.volumeD,matrixByMatrix(this.z2A,this.factorAD));
     },
     inertiaA: function(){
+      var i; // will contain the inertia ellipse
       var center = this.centerEllipses == "centroid" ? this.centroidA : {cx:0,cy:0};
-      var i = this.inertia(this.z2A,center,this.volumeA,this.showEllipses);
-      if (this.ellipseTypeA == "binet") {
+      if (this.ellipseTypeA == "lyz") {
+        i = this.inertia(this.lyzA,center,this.volumeA);
+      }
+      else {
+        i = this.inertia(this.z2A,center,this.volumeA,this.showEllipses);
+      }
+      if (this.ellipseTypeA != "legendre") {
         i.rx = 1/i.rx;
         i.ry = 1/i.ry;
       }
       return i;
     },
     inertiaD: function(){
+      var i; // will contain the inertia ellipse
       var center = this.centerEllipses == "centroid" ? this.centroidD : {cx:0,cy:0};
-      var i = this.inertia(this.z2D,center,this.volumeD,this.showEllipses);
-      if (this.ellipseTypeD == "binet") {
+      if (this.ellipseTypeD == "lyz") {
+        i = this.inertia(this.lyzD,center,this.volumeD);
+      }
+      else {
+        i = this.inertia(this.z2D,center,this.volumeD,this.showEllipses);
+      }
+      if (this.ellipseTypeD != "legendre") {
         i.rx = 1/i.rx;
         i.ry = 1/i.ry;
       }
@@ -357,7 +379,7 @@ var vm = new Vue({
       this.aIsMaster = useA;
     },
     // --------------------------------------------------------------
-    // pout the A polygon in isotropic position
+    // put the A polygon in isotropic position
     toIsotropicA: function () {
       if (!this.isotropicPositionA){
         return;
@@ -658,7 +680,7 @@ function polystr2localStorage(str,aIsMaster){
     localStorage.setItem("polygoneStr", str);
     localStorage.setItem("aIsMaster", aIsMaster);
   } catch(e) {
-    console.log('Can\'t save '+(aIsMaster ? "A" : "D")+' to Local Storage :(');
+    console.log('Can\'t save '+(aIsMaster ? "A" : "D")+' to Local Storage :(',e.message);
   }
 }
 
